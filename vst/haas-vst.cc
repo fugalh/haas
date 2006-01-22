@@ -1,18 +1,18 @@
 #include "haas-vst.h"
 
 //----------------------------------------------------------------------
-Haas::Haas (audioMasterCallback audioMaster)
+Haas::Haas(audioMasterCallback audioMaster)
     : AudioEffectX (audioMaster, 1, 6),  // 1 program, 6 params
       delay(0.5f),
       balance(0.5f),
       detune(0.5f),
       lpf(0.5f),
       lpf_freq(0.5f),
-      predelay(0f)
+      predelay(0.f)
 {
     setNumInputs(2);     // stereo in
     setNumOutputs(2);    // stereo out
-    setUniqueID("Haas"); // identify
+    setUniqueID('Haas'); // identify
     canMono();           // makes sense to feed both inputs with the same signal
     canProcessReplacing(); // supports both accumulating and replacing output
     strcpy(programName, "Default"); // default program name
@@ -39,7 +39,7 @@ void Haas::getProgramName(char *name)
 //----------------------------------------------------------------------
 void Haas::setParameter(long index, float value)
 {
-    fGain = value;
+	// TODO
 }
 
 //----------------------------------------------------------------------
@@ -52,13 +52,15 @@ float Haas::getParameter(long index)
 	case 1:
 	    return balance;
 	case 2:
-	    return lpf;
+	    return detune;
 	case 3:
-	    return lpf_freq;
+	    return lpf;
 	case 4:
+	    return lpf_freq;
+	case 5:
 	    return predelay;
     }
-    return 0f;	// bogus
+    return 0.f;	// bogus
 }
 
 //----------------------------------------------------------------------
@@ -93,7 +95,7 @@ void Haas::getParameterDisplay(long index, char *text)
     switch (index)
     {
 	case 0:	// delay
-	    dB2string(2.0 * delay - 1.0, text);
+	    dB2string((2.0 * delay - 1.0) * 45.0, text);
 	    break;
 	case 1:	// balance
 	    dB2string(2.0 * balance - 1.0, text);
@@ -119,7 +121,7 @@ void Haas::getParameterLabel(long index, char *label)
     switch (index)
     {
 	case 0:
-	    label[0] = 0;
+	    strcpy(label, "ms");
 	    break;
 	case 1:
 	    label[0] = 0;
@@ -169,6 +171,7 @@ void Haas::process (float **inputs, float **outputs, long sampleFrames)
     float *out1 = outputs[0];
     float *out2 = outputs[1];
 
+    float fGain = 1.0;
     while (--sampleFrames >= 0)
     {
         (*out1++) += (*in1++) * fGain;	// accumulating
@@ -185,6 +188,7 @@ void Haas::processReplacing (float **inputs, float **outputs, long sampleFrames)
     float *out1 = outputs[0];
     float *out2 = outputs[1];
 
+    float fGain = 1.0;
     while (--sampleFrames >= 0)
     {
         (*out1++) = (*in1++) * fGain;	// replacing
@@ -205,7 +209,7 @@ extern "C" __declspec(dllexport) AEffect *main_plugin(audioMasterCallback audioM
 extern "C" AEffect *main_macho(audioMasterCallback audioMaster);
 
 #else
-AEffect *main (audioMasterCallback audioMaster);
+AEffect *main(audioMasterCallback audioMaster);
 #endif
 
 //----------------------------------------------------------------------
@@ -218,14 +222,8 @@ AEffect *main(audioMasterCallback audioMaster)
     // Create the AudioEffect
     Haas* effect = new Haas (audioMaster);
     if (!effect)
-	return 0;
+		return 0;
 
-    // Check if no problem in constructor of AGain
-    if (oome)
-    {
-	delete effect;
-	return 0;
-    }
     return effect->getAeffect();
 }
 

@@ -1,14 +1,19 @@
 #ifndef __HAAS_VST_H
 #define __HAAS_VST_H
 
-#include "audioeffectx.h"
+#include <audioeffectx.h>
+#include <vstplugsmacho.h>
+// SndObj headers choke on SGI being defined as 0, (from vstplugsmacho.h) they
+// expect it to not be defined at all.
+#undef SGI
+#include <SndObj/AudioDefs.h>
 
 //-------------------------------------------------------------------------------------------------------
 class Haas : public AudioEffectX
 {
     public:
-	Haas (audioMasterCallback audioMaster);
-	~Haas ();
+	Haas(audioMasterCallback audioMaster);
+	~Haas();
 
 	// Processes
 	virtual void process (float **inputs, float **outputs, 
@@ -32,7 +37,7 @@ class Haas : public AudioEffectX
 	virtual bool getProductString (char* text);
 	virtual long getVendorVersion () { return 1000; }
 
-	virtual VstPlugCategory getPlugCategory () { return kPlugCategEffect; }
+	virtual VstPlugCategory getPlugCategory() { return kPlugCategEffect; }
 
     protected:
 	float delay;
@@ -41,6 +46,9 @@ class Haas : public AudioEffectX
 	float lpf;
 	float lpf_freq;
 	float predelay;
+
+	SndObj *channel1, *procobj1;
+
 	char programName[32];
 };
 
