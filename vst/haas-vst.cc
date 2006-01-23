@@ -1,14 +1,8 @@
 #include "haas-vst.h"
 
 //----------------------------------------------------------------------
-Haas::Haas(audioMasterCallback audioMaster)
-    : AudioEffectX (audioMaster, 1, 6),  // 1 program, 6 params
-      delay(0.5f),
-      balance(0.5f),
-      detune(0.5f),
-      lpf(0.5f),
-      lpf_freq(0.5f),
-      predelay(0.f)
+HaasVST::HaasVST(audioMasterCallback audioMaster)
+    : AudioEffectX (audioMaster, 1, 6)  // 1 program, 6 params
 {
     setNumInputs(2);     // stereo in
     setNumOutputs(2);    // stereo out
@@ -19,181 +13,167 @@ Haas::Haas(audioMasterCallback audioMaster)
 }
 
 //----------------------------------------------------------------------
-Haas::~Haas()
+HaasVST::~HaasVST()
 {
     // noop
 }
 
 //----------------------------------------------------------------------
-void Haas::setProgramName(char *name)
+void HaasVST::setProgramName(char *name)
 {
     strcpy (programName, name);
 }
 
 //----------------------------------------------------------------------
-void Haas::getProgramName(char *name)
+void HaasVST::getProgramName(char *name)
 {
     strcpy (name, programName);
 }
 
 //----------------------------------------------------------------------
-void Haas::setParameter(long index, float value)
-{
-	// TODO
-}
-
-//----------------------------------------------------------------------
-float Haas::getParameter(long index)
+void HaasVST::setParameter(long index, float value)
 {
     switch(index)
     {
-	case 0:
-	    return delay;
-	case 1:
-	    return balance;
-	case 2:
-	    return detune;
-	case 3:
-	    return lpf;
-	case 4:
-	    return lpf_freq;
-	case 5:
-	    return predelay;
+        case 0: haas.set_delay((value - .5) * 45.0);   break;
+        case 1: haas.set_balance((value - .5) * 2.0);  break;
+        case 2: haas.set_detune((value - .5) * 15.0);  break;
+        case 3: haas.set_lpf((value - .5) * 2.0);      break;
+        case 4: haas.set_lpf_freq(value * 17.0 + 1.0); break;
+        case 5: haas.set_predelay(value * 100.0);      break;
     }
-    return 0.f;	// bogus
 }
 
 //----------------------------------------------------------------------
-void Haas::getParameterName(long index, char *label)
+float HaasVST::getParameter(long index)
+{
+    switch(index)
+    {
+        case 0:
+            return .5 + haas.delay() / 45.0;
+        case 1:
+            return .5 + haas.balance() / 2.0;
+        case 2:
+            return .5 + haas.detune() / 15.0;
+        case 3:
+            return .5 + haas.lpf() / 2.0;
+        case 4:
+            return (haas.lpf_freq() - 1.0) / 17.0;
+        case 5:
+            return haas.predelay() / 100.0;
+    }
+    return 0.f; // bogus
+}
+
+//----------------------------------------------------------------------
+void HaasVST::getParameterName(long index, char *label)
 {
     switch (index)
     {
-	case 0:
-	    strcpy(label, "Delay");
-	    break;
-	case 1:
-	    strcpy(label, "Pan");
-	    break;
-	case 2:
-	    strcpy(label, "Detune");
-	    break;
-	case 3:
-	    strcpy(label, "Low-pass Filter");
-	    break;
-	case 4:
-	    strcpy(label, "Low-pass Filter Frequency");
-	    break;
-	case 5:
-	    strcpy(label, "Pre-delay");
-	    break;
+        case 0:
+            strcpy(label, "Delay");
+            break;
+        case 1:
+            strcpy(label, "Pan");
+            break;
+        case 2:
+            strcpy(label, "Detune");
+            break;
+        case 3:
+            strcpy(label, "Low-pass Filter");
+            break;
+        case 4:
+            strcpy(label, "Low-pass Filter Frequency");
+            break;
+        case 5:
+            strcpy(label, "Pre-delay");
+            break;
     }
 }
 
 //----------------------------------------------------------------------
-void Haas::getParameterDisplay(long index, char *text)
+void HaasVST::getParameterDisplay(long index, char *text)
 {
     switch (index)
     {
-	case 0:	// delay
-	    dB2string((2.0 * delay - 1.0) * 45.0, text);
-	    break;
-	case 1:	// balance
-	    dB2string(2.0 * balance - 1.0, text);
-	    break;
-	case 2:	// detune
-	    dB2string(2.0 * detune - 1.0, text);
-	    break;
-	case 3:	// lpf
-	    dB2string(2.0 * detune - 1.0, text);
-	    break;
-	case 4:	// lpf_freq
-	    dB2string(1.0 + (lpf_freq * 17.0), text);
-	    break;
-	case 5:	// predelay
-	    dB2string(predelay * 100.0, text);
-	    break;
+        case 0: // delay
+            dB2string((2.0 * haas.delay() - 1.0) * 45.0, text);
+            break;
+        case 1: // balance
+            dB2string(2.0 * haas.balance() - 1.0, text);
+            break;
+        case 2: // detune
+            dB2string(2.0 * haas.detune() - 1.0, text);
+            break;
+        case 3: // lpf
+            dB2string(2.0 * haas.detune() - 1.0, text);
+            break;
+        case 4: // lpf_freq
+            dB2string(1.0 + (haas.lpf_freq() * 17.0), text);
+            break;
+        case 5: // predelay
+            dB2string(haas.predelay() * 100.0, text);
+            break;
     }
 }
 
 //----------------------------------------------------------------------
-void Haas::getParameterLabel(long index, char *label)
+void HaasVST::getParameterLabel(long index, char *label)
 {
     switch (index)
     {
-	case 0:
-	    strcpy(label, "ms");
-	    break;
-	case 1:
-	    label[0] = 0;
-	    break;
-	case 2:
-	    strcpy(label, "cents");
-	    break;
-	case 3:
-	    label[0] = 0;
-	    break;
-	case 4:
-	    strcpy(label, "KHz");
-	    break;
-	case 5:
-	    strcpy(label, "ms");
-	    break;
+        case 0:
+            strcpy(label, "ms");
+            break;
+        case 1:
+            label[0] = 0;
+            break;
+        case 2:
+            strcpy(label, "cents");
+            break;
+        case 3:
+            label[0] = 0;
+            break;
+        case 4:
+            strcpy(label, "KHz");
+            break;
+        case 5:
+            strcpy(label, "ms");
+            break;
     }
 }
 
 //----------------------------------------------------------------------
-bool Haas::getEffectName(char* name)
+bool HaasVST::getEffectName(char* name)
 {
     strcpy (name, "Haas Effect");
     return true;
 }
 
 //----------------------------------------------------------------------
-bool Haas::getProductString (char* text)
+bool HaasVST::getProductString (char* text)
 {
     strcpy (text, "Haas Product");
     return true;
 }
 
 //----------------------------------------------------------------------
-bool Haas::getVendorString (char* text)
+bool HaasVST::getVendorString (char* text)
 {
-    strcpy (text, "Fugal Computing");
+    strcpy (text, "Hans Fugal");
     return true;
 }
 
 //----------------------------------------------------------------------
-// TODO
-void Haas::process (float **inputs, float **outputs, long sampleFrames)
+void HaasVST::process (float **inputs, float **outputs, long sampleFrames)
 {
-    float *in1  =  inputs[0];
-    float *in2  =  inputs[1];
-    float *out1 = outputs[0];
-    float *out2 = outputs[1];
-
-    float fGain = 1.0;
-    while (--sampleFrames >= 0)
-    {
-        (*out1++) += (*in1++) * fGain;	// accumulating
-        (*out2++) += (*in2++) * fGain;
-    }
+    haas.run_adding(inputs, outputs, sampleFrames);
 }
 
 //----------------------------------------------------------------------
-// TODO
-void Haas::processReplacing (float **inputs, float **outputs, long sampleFrames)
+void HaasVST::processReplacing (float **inputs, float **outputs, long sampleFrames)
 {
-    float *in1  =  inputs[0];
-    float *in2  =  inputs[1];
-    float *out1 = outputs[0];
-    float *out2 = outputs[1];
-
-    float fGain = 1.0;
-    while (--sampleFrames >= 0)
-    {
-        (*out1++) = (*in1++) * fGain;	// replacing
-        (*out2++) = (*in2++) * fGain;
-    }
+    haas.run(inputs, outputs, sampleFrames);
 }
 
 
@@ -217,12 +197,12 @@ AEffect *main(audioMasterCallback audioMaster)
 {
     // Get VST Version
     if (!audioMaster(0, audioMasterVersion, 0, 0, 0, 0))
-	return 0;  // old version
+        return 0;  // old version
 
     // Create the AudioEffect
-    Haas* effect = new Haas (audioMaster);
+    HaasVST* effect = new HaasVST(audioMaster);
     if (!effect)
-		return 0;
+                return 0;
 
     return effect->getAeffect();
 }
@@ -241,3 +221,5 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
     return 1;
 }
 #endif
+
+// vim: expandtab

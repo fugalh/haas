@@ -292,7 +292,7 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
-				HEADER_SEARCH_PATHS = "~/src/VST/";
+				HEADER_SEARCH_PATHS = "~/src/VST/ ../../common";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Audio/Plug-Ins/VST/";
 				PRODUCT_NAME = Haas;
