@@ -6,6 +6,9 @@
 class Haas
 {
 public:
+    Haas();
+    ~Haas();
+
     /// Stereo input, stereo output.
     void run(float **in, float **out, unsigned long count);
     /// Stereo input, stereo output.
@@ -31,6 +34,16 @@ public:
     void set_lpf_freq(float);
     // 0.0 to 100.0 ms
     void set_predelay(float);
+
+protected:
+    SndObj lchan, rchan;
+    DelayLine ldelay, rdelay, lpredelay, rpredelay;
+    Pitch ldetune, rdetune;
+    LoPass llpf, rlpf;
+
+    float _delay, _balance, _detune, _lpf, _lpf_freq, _predelay;
+    float rag;	// run-adding gain
+    static float cent;
 };
 
 #endif
