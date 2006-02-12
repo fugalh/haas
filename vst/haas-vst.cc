@@ -35,12 +35,12 @@ void HaasVST::setParameter(long index, float value)
 {
     switch(index)
     {
-        case 0: haas.set_delay((value - .5) * 45.0);   break;
-        case 1: haas.set_balance((value - .5) * 2.0);  break;
-        case 2: haas.set_detune((value - .5) * 15.0);  break;
-        case 3: haas.set_lpf((value - .5) * 2.0);      break;
-        case 4: haas.set_lpf_freq(value * 17.0 + 1.0); break;
-        case 5: haas.set_predelay(value * 100.0);      break;
+        case 0: haas.delay = (value - .5) * 45.0;   break;
+        case 1: haas.balance = (value - .5) * 2.0;  break;
+        case 2: haas.detune = (value - .5) * 15.0;  break;
+        case 3: haas.lpf = (value - .5) * 2.0;      break;
+        case 4: haas.lpf_freq = value * 17.0 + 1.0; break;
+        case 5: haas.predelay = value * 100.0;      break;
     }
 }
 
@@ -50,17 +50,17 @@ float HaasVST::getParameter(long index)
     switch(index)
     {
         case 0:
-            return .5 + haas.delay() / 45.0;
+            return .5 + haas.delay / 45.0;
         case 1:
-            return .5 + haas.balance() / 2.0;
+            return .5 + haas.balance / 2.0;
         case 2:
-            return .5 + haas.detune() / 15.0;
+            return .5 + haas.detune / 15.0;
         case 3:
-            return .5 + haas.lpf() / 2.0;
+            return .5 + haas.lpf / 2.0;
         case 4:
-            return (haas.lpf_freq() - 1.0) / 17.0;
+            return (haas.lpf_freq - 1.0) / 17.0;
         case 5:
-            return haas.predelay() / 100.0;
+            return haas.predelay / 100.0;
     }
     return 0.f; // bogus
 }
@@ -97,22 +97,22 @@ void HaasVST::getParameterDisplay(long index, char *text)
     switch (index)
     {
         case 0: // delay
-            dB2string((2.0 * haas.delay() - 1.0) * 45.0, text);
+            dB2string((2.0 * haas.delay - 1.0) * 45.0, text);
             break;
         case 1: // balance
-            dB2string(2.0 * haas.balance() - 1.0, text);
+            dB2string(2.0 * haas.balance - 1.0, text);
             break;
         case 2: // detune
-            dB2string(2.0 * haas.detune() - 1.0, text);
+            dB2string(2.0 * haas.detune - 1.0, text);
             break;
         case 3: // lpf
-            dB2string(2.0 * haas.detune() - 1.0, text);
+            dB2string(2.0 * haas.detune - 1.0, text);
             break;
         case 4: // lpf_freq
-            dB2string(1.0 + (haas.lpf_freq() * 17.0), text);
+            dB2string(1.0 + (haas.lpf_freq * 17.0), text);
             break;
         case 5: // predelay
-            dB2string(haas.predelay() * 100.0, text);
+            dB2string(haas.predelay * 100.0, text);
             break;
     }
 }
