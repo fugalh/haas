@@ -2,38 +2,17 @@
 #include "haas.h"
 #include <math.h>
 
-/* structs */
-
-typedef struct {
-    int quad1, quad2;	// Hz
-} detune_state;
-
-// one-pole IIR lowpass filter
-// a = 1-b
-// b = exp(-2*pi*fc/fs)
-typedef struct
-{
-    float z;	// Z^-1
-    float a,b;
-    float gain;	// crossfade gain
-} onepole_state;
-
-// as in left or right channel
-typedef struct {
-    delay_state delay;	// predelay + haas delay
-    float attenuation;	// <= 1
-    detune_state detune;
-    onepole_state lpf;
-} channel;
-
 /* data */
 // lowpass filter coefficients, for the lpf in the detuner
-extern float lpf_coeffs[];
 channel left, right;
 int fs;		// sample rate
 #define MAX_DELAY (int)((45+100)*1.e-3*48000)
 float left_dl_ary[MAX_DELAY+1];
 float right_dl_ary[MAX_DELAY+1];
+float detune_llpf1_ary[LPF_m];
+float detune_llpf2_ary[LPF_m];
+float detune_rlpf1_ary[LPF_m];
+float detune_rlpf2_ary[LPF_m];
 
 /* functions */
 void delay(delay_state *ldl, delay_state *rdl, 
@@ -63,11 +42,27 @@ void haas_config(haas_parameters p, int samplerate)
 	right.attenuation = 0;
 
     // detune
-    left.detune.quad2 = fs/4.0;
+    left.detune.quad2.w = 2*M_PI*fs/4.0;
     if (p.detune < 0)
-	left.detune.quad1 = fs/4.0 - 440.0*(pow(2,-p.detune/1200));
+	left.detune.quad1.w = 2*M_PI*(fs/4.0 - 440.0*(pow(2,-p.detune/1200)));
     else
-	left.detune.quad1 = fs/4.0;
+	left.detune.quad1 = left.detune.quad2;
+    if (left.detune.lpf1_dl.w == 0)	// init detune lowpass filters
+    {
+	left.detune.lpf1_dl.w = detune_llpf1_ary;
+	left.detune.lpf2_dl.w = detune_llpf2_ary;
+	wrap(LPF_m-1, left.detune.lpf1_dl.w, &left.detune.lpf1_dl.p);
+	wrap(LPF_m-1, left.detune.lpf2_dl.w, &left.detune.lpf2_dl.p);
+	left.detune.lpf1_dl.m = LPF_m;
+	left.detune.lpf2_dl.m = LPF_m;
+
+	right.detune.lpf1_dl.w = detune_rlpf1_ary;
+	right.detune.lpf2_dl.w = detune_rlpf2_ary;
+	wrap(LPF_m-1, right.detune.lpf1_dl.w, &right.detune.lpf1_dl.p);
+	wrap(LPF_m-1, right.detune.lpf2_dl.w, &right.detune.lpf2_dl.p);
+	right.detune.lpf1_dl.m = LPF_m;
+	right.detune.lpf2_dl.m = LPF_m;
+    }
 
     // lpf
     if (p.lpf < 0)
@@ -92,11 +87,11 @@ void haas_config(haas_parameters p, int samplerate)
 	left.attenuation = 0;
 
     // detune
-    right.detune.quad2 = fs/4.0;
+    right.detune.quad2.w = 2*M_PI*fs/4.0;
     if (p.detune > 0)
-	right.detune.quad1 = fs/4.0 - 440.0*(pow(2,p.detune/1200));
+	right.detune.quad1.w = 2*M_PI*(fs/4.0 - 440.0*(pow(2,p.detune/1200)));
     else
-	right.detune.quad1 = fs/4.0;
+	right.detune.quad1.w = right.detune.quad2.w;
 
     // lpf
     if (p.lpf > 0)
@@ -157,12 +152,6 @@ void onepole(float inl, float inr, float *outl, float *outr)
     d = lpf->a * (inr + lpf->z * lpf->b);		// lowpass
     *outr = d * lpf->gain + inr * (1-lpf->gain);	// crossfade
     lpf->z = inr;
-}
-
-void detune(float inl, float inr, float *outl, float *outr)
-{
-    *outl = inl;	// glorified wire. TODO
-    *outr = inr;
 }
 
 void pan(float inl, float inr, float *outl, float *outr)

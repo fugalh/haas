@@ -86,10 +86,16 @@ int main(void)
     haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
-    // lpf full at 880
+    // lpf full right at 880
     p.detune = 0;
     p.lpf = 1.0;
     p.lpf_cutoff = 880;
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
+    dump(output_l, output_r, sf, SR);
+
+    // lpf full right at 880
+    p.lpf = -1.0;
     haas_config(p,SR);
     haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
