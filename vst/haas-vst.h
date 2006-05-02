@@ -1,51 +1,41 @@
-#ifndef __HAAS_VST_H
-#define __HAAS_VST_H
+#ifndef HAAS_VST_H
+#define HAAS_VST_H
 
-#include <audioeffectx.h>
-#include <vstplugsmacho.h>
-// SndObj headers choke on SGI being defined as 0, (from vstplugsmacho.h) they
-// expect it to not be defined at all.
-#undef SGI
-#include <SndObj/AudioDefs.h>
-#include "haas.h"
+#include "public.sdk/source/vst2.x/audioeffectx.h"
+#include "../common/haas.h"
 
 //-------------------------------------------------------------------------------------------------------
-class HaasVST : public AudioEffectX
+class Haas : public AudioEffectX
 {
-    public:
-        HaasVST(audioMasterCallback audioMaster);
-        ~HaasVST();
+public:
+	Haas (audioMasterCallback audioMaster);
+	~Haas ();
 
-        // Processes
-        virtual void process (float **inputs, float **outputs, 
-                long sampleFrames);
-        virtual void processReplacing (float **inputs, float **outputs, 
-                long sampleFrames);
+	// Processing
+	virtual void processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames);
 
-        // Program
-        virtual void setProgramName (char *name);
-        virtual void getProgramName (char *name);
+	// Program
+	virtual void setProgramName (char* name);
+	virtual void getProgramName (char* name);
 
-        // Parameters
-        virtual void setParameter (long index, float value);
-        virtual float getParameter (long index);
-        virtual void getParameterLabel (long index, char *label);
-        virtual void getParameterDisplay (long index, char *text);
-        virtual void getParameterName (long index, char *text);
+	// Parameters
+	virtual void setParameter (VstInt32 index, float value);
+	virtual float getParameter (VstInt32 index);
+	virtual void getParameterLabel (VstInt32 index, char* label);
+	virtual void getParameterDisplay (VstInt32 index, char* text);
+	virtual void getParameterName (VstInt32 index, char* text);
 
-        virtual bool getEffectName (char* name);
-        virtual bool getVendorString (char* text);
-        virtual bool getProductString (char* text);
-        virtual long getVendorVersion () { return 1000; }
+	virtual void setSampleRate (float sampleRate);
 
-        virtual VstPlugCategory getPlugCategory() { return kPlugCategEffect; }
 
-    protected:
-        Haas haas;
+	virtual bool getEffectName (char* name);
+	virtual bool getVendorString (char* text);
+	virtual bool getProductString (char* text);
+	virtual VstInt32 getVendorVersion ();
 
-        char programName[32];
+protected:
+	haas_parameters params;
+	char programName[kVstMaxProgNameLen+1];
 };
 
 #endif
-
-// vim: expandtab

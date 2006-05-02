@@ -10,7 +10,7 @@ int main(void)
     float output_l[SR];
     float impulse_r[SR];
     float output_r[SR];
-    parameters p;
+    haas_parameters p;
     SNDFILE *sf;
     SF_INFO info;
 
@@ -36,61 +36,62 @@ int main(void)
     p.detune = 0;
     p.lpf = 0;
     p.lpf_cutoff = 18000;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // predelay
     p.predelay = 100;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
+    dump(output_l, output_r, sf, SR);
+
+    // delay left 45ms
+    p.predelay = 0;
+    p.delay = -45;
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // delay right 45ms
     p.predelay = 0;
     p.delay = 45;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
-    dump(output_l, output_r, sf, SR);
-
-    // delay left 45ms
-    p.delay = -45;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // pan left 1/2
     p.delay = 0;
     p.pan = -.5;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // pan right 1/2
     p.pan = .5;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // detune left 15 cents
     p.pan = 0;
     p.detune = -15;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // detune right 15 cents
     p.detune = 15;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     // lpf full at 880
     p.detune = 0;
     p.lpf = 1.0;
     p.lpf_cutoff = 880;
-    config(p,SR);
-    run(impulse_l, impulse_r, output_l, output_r, SR);
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     sf_close(sf);

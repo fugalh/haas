@@ -1,15 +1,20 @@
 #ifndef HAAS_H
 #define HAAS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
 typedef struct {
     float predelay, delay, pan, detune, lpf, lpf_cutoff;
-} parameters;
+} haas_parameters;
 
-void config(parameters, int samplerate);
-void run(float *in_left, float *in_right, 
+void haas_config(haas_parameters, int samplerate);
+void haas_run(float *in_left, float *in_right, 
 	float *out_left, float *out_right,
 	int num_frames);
 
-extern int fs;
-
+#ifdef __cplusplus
+}
+#endif
 #endif

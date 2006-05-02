@@ -31,8 +31,9 @@ typedef struct {
 extern float lpf_coeffs[];
 channel left, right;
 int fs;		// sample rate
-float left_dl_ary[(int)((45+100)*1.e-3*48000)];
-float right_dl_ary[sizeof(left_dl_ary)];
+#define MAX_DELAY (int)((45+100)*1.e-3*48000)
+float left_dl_ary[MAX_DELAY+1];
+float right_dl_ary[MAX_DELAY+1];
 
 /* functions */
 void delay(delay_state *ldl, delay_state *rdl, 
@@ -42,23 +43,24 @@ void detune(float inl, float inr, float *outl, float *outr);
 void pan(float inl, float inr, float *outl, float *outr);
 
 /* implementation */
-void config(parameters p, int samplerate)
+void haas_config(haas_parameters p, int samplerate)
 {
     fs = samplerate;
 
     /* left */
     // delay
-    left.delay.m = (p.predelay * 1.0e-3)*fs;
     left.delay.w = left_dl_ary;
-    wrap(left.delay.m, left.delay.w, &left.delay.p);
+    left.delay.m = (p.predelay * 1.0e-3)*fs;
     if (p.delay < 0)
 	left.delay.m += (-p.delay * 1.0e-3)*fs;
+    wrap(MAX_DELAY, left.delay.w, &left.delay.p); // in case p is 0
+
     
     // pan
     if (p.pan < 0)
-	left.attenuation = -p.pan;
+	right.attenuation = -p.pan;
     else
-	left.attenuation = 0;
+	right.attenuation = 0;
 
     // detune
     left.detune.quad2 = fs/4.0;
@@ -68,23 +70,26 @@ void config(parameters p, int samplerate)
 	left.detune.quad1 = fs/4.0;
 
     // lpf
-    left.lpf.gain = p.lpf;
+    if (p.lpf < 0)
+	left.lpf.gain = -p.lpf;
+    else
+	left.lpf.gain = 0;
     left.lpf.b = exp(-2.0 * M_PI * p.lpf_cutoff/fs);
     left.lpf.a = 1.0 - left.lpf.b;
 
     /* right */
     // delay
-    right.delay.m = (p.predelay * 1.0e-3)*fs;
     right.delay.w = right_dl_ary;
-    wrap(right.delay.m, right.delay.w, &right.delay.p);
+    right.delay.m = (p.predelay * 1.0e-3)*fs;
     if (p.delay > 0)
 	right.delay.m += (p.delay * 1.0e-3)*fs;
+    wrap(MAX_DELAY, right.delay.w, &right.delay.p); // in case p is 0
     
     // pan
     if (p.pan > 0)
-	right.attenuation = p.pan;
+	left.attenuation = p.pan;	// attenuate the other side
     else
-	right.attenuation = 0;
+	left.attenuation = 0;
 
     // detune
     right.detune.quad2 = fs/4.0;
@@ -94,12 +99,15 @@ void config(parameters p, int samplerate)
 	right.detune.quad1 = fs/4.0;
 
     // lpf
+    if (p.lpf > 0)
+	right.lpf.gain = p.lpf;
+    else
+	right.lpf.gain = 0;
     right.lpf.a = left.lpf.a;
     right.lpf.b = left.lpf.b;
-    right.lpf.gain = left.lpf.gain;
 }
 
-void run(float *inl, float *inr, 
+void haas_run(float *inl, float *inr, 
 	float *outl, float *outr,
 	int frames)
 {
@@ -119,36 +127,35 @@ void run(float *inl, float *inr,
 
 void delay(delay_state *ldl, delay_state *rdl, float inl, float inr, float *outl, float *outr)
 {
-    if (ldl->m > 0)
-    {
-	*outl = *ldl->p;
-	*ldl->p = inl;
-	cdelay(ldl->m - 1, ldl->w, &ldl->p);
-    }
-    else
-	*outl = inl;
-    if (rdl->m > 0)
-    {
-	*outr = *rdl->p;
-	*rdl->p = inr;
-	cdelay(rdl->m - 1, rdl->w, &rdl->p);
-    }
-    else
-	*outr = inr;
+    float *oldest;
+    // left
+    *ldl->p = inl;
+    oldest = ldl->p + ldl->m;
+    wrap(MAX_DELAY, ldl->w, &oldest);
+    cdelay(MAX_DELAY, ldl->w, &ldl->p);
+    *outl = *oldest;
+
+    // right
+    *rdl->p = inr;
+    oldest = rdl->p + rdl->m;
+    wrap(MAX_DELAY, rdl->w, &oldest);
+    cdelay(MAX_DELAY, rdl->w, &rdl->p);
+    *outr = *oldest;
 }
 
 void onepole(float inl, float inr, float *outl, float *outr)
 {
     onepole_state *lpf;
+    double d;
 
     lpf = &left.lpf;
-    *outl = lpf->a * (inl + lpf->z * lpf->b);		// lowpass
-    *outl = *outl * lpf->gain + inl * (1-lpf->gain);	// crossfade
+    d = lpf->a * (inl + lpf->z * lpf->b);		// lowpass
+    *outl = d * lpf->gain + inl * (1-lpf->gain);	// crossfade
     lpf->z = inl;
 
     lpf = &right.lpf;
-    *outr = lpf->a * (inr + lpf->z * lpf->b);		// lowpass
-    *outr = *outr * lpf->gain + inr * (1-lpf->gain);	// crossfade
+    d = lpf->a * (inr + lpf->z * lpf->b);		// lowpass
+    *outr = d * lpf->gain + inr * (1-lpf->gain);	// crossfade
     lpf->z = inr;
 }
 

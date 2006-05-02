@@ -2,7 +2,7 @@
 
 void cdelay(int D, float *w, float **p)
 {
-	(*p)--;			/* decrement pointer and... */
+	(*p)--;			/* move pointer and... */
 	wrap(D, w, p);		/* ...wrap modulo-(D+1) */
 }
 
