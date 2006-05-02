@@ -135,7 +135,6 @@ void Haas::getParameterName (VstInt32 index, char* label)
 //-----------------------------------------------------------------------------------------
 void Haas::getParameterDisplay (VstInt32 index, char* text)
 {
-    float c;
     switch (index)
     {
 	case PREDELAY:
