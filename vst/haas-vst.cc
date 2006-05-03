@@ -75,7 +75,7 @@ void Haas::setParameter (VstInt32 index, float value)
 void Haas::setSampleRate (float sampleRate)
 {
     AudioEffectX::setSampleRate(sampleRate);
-    haas_config(params, (int)sampleRate);
+    haas_init((int)sampleRate);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ float Haas::getParameter (VstInt32 index)
 	    value = 0.5 + params.pan / 2;
 	    break;
 	case DETUNE:
-	    value = 0.5 + params.detune / 2;
+	    value = 0.5 + params.detune / (2*15);
 	    break;
 	case LPF:
 	    value = 0.5 + params.lpf / 2 ;
@@ -171,12 +171,20 @@ void Haas::getParameterLabel (VstInt32 index, char* label)
 	    break;
 	case PAN:
 	    vst_strncpy (label, "", kVstMaxParamStrLen);
+	    if (params.pan < 0)
+		vst_strncpy (label, "L", kVstMaxParamStrLen);
+	    if (params.pan > 0)
+		vst_strncpy (label, "R", kVstMaxParamStrLen);
 	    break;
 	case DETUNE:
 	    vst_strncpy (label, "cents", kVstMaxParamStrLen);
 	    break;
 	case LPF:
 	    vst_strncpy (label, "", kVstMaxParamStrLen);
+	    if (params.lpf < 0)
+		vst_strncpy (label, "L", kVstMaxParamStrLen);
+	    if (params.lpf > 0)
+		vst_strncpy (label, "R", kVstMaxParamStrLen);
 	    break;
 	case LPF_CUTOFF:
 	    vst_strncpy (label, "Hz", kVstMaxParamStrLen);

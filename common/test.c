@@ -1,9 +1,12 @@
 #include "haas.h"
+#include "detune.h"
 #include <string.h>
 #include <sndfile.h>
+#include <stdlib.h>
 
 #define SR 48000
 void dump(float *l, float *r, SNDFILE *sf, int n);
+
 int main(void)
 {
     float impulse_l[SR];
@@ -98,6 +101,19 @@ int main(void)
     p.lpf = -1.0;
     haas_config(p,SR);
     haas_run(impulse_l, impulse_r, output_l, output_r, SR);
+    dump(output_l, output_r, sf, SR);
+
+    // lpf some white noise
+    int i;
+    float s[LPF_m];
+    delay_state dl;
+    dl.w = dl.p = s;
+    dl.m = LPF_m;
+    for (i=0; i<SR; i++)
+    {
+	output_l[i] = 2*(0.5 - (float)rand()/RAND_MAX);
+	output_r[i] = fir_lpf(&dl, output_l[i]);
+    }
     dump(output_l, output_r, sf, SR);
 
     sf_close(sf);

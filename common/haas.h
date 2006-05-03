@@ -43,11 +43,12 @@ typedef struct {
 } channel;
 
 /* data */
-#define LPF_m 32
+#define LPF_m 64
 extern channel left, right;
 
 /* functions */
 
+void haas_init(int samplerate);
 void haas_config(haas_parameters, int samplerate);
 void haas_run(float *in_left, float *in_right, 
 	float *out_left, float *out_right,
