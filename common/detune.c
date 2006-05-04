@@ -16,17 +16,16 @@ float detune(detune_state *s, float x)
     a = b = x;
 
     // first stage (ring with quad1)
-    a *= sin(s->quad1.w * s->quad1.t);
-    b *= cos(s->quad1.w * s->quad1.t++);
+    a *= sin(s->quad1.w * (double)s->quad1.t/fs);
+    b *= cos(s->quad1.w * (double)s->quad1.t++/fs);
 
     // second stage (lowpass filters)
     a = fir_lpf(&s->lpf1_dl, a);
     b = fir_lpf(&s->lpf2_dl, b);
 
-
     // third stage (ring with quad2)
-    a *= sin(s->quad2.w * s->quad2.t);
-    b *= cos(s->quad2.w * s->quad2.t++);
+    a *= sin(s->quad2.w * (double)s->quad2.t/fs);
+    b *= cos(s->quad2.w * (double)s->quad2.t++/fs);
 
     // final sum
     return a+b;
@@ -36,7 +35,7 @@ float detune(detune_state *s, float x)
 // sum_{k=0}^{M}(b_k*z^-k)
 double fir_lpf(delay_state *dl, float x)
 {
-    float b,h;
+    double b,h;
     int k;
     float *p, *w;
     double y;

@@ -43,7 +43,7 @@ typedef struct {
 } channel;
 
 /* data */
-#define LPF_m 64
+#define LPF_m 32
 extern channel left, right;
 
 /* functions */
@@ -54,6 +54,7 @@ void haas_run(float *in_left, float *in_right,
 	float *out_left, float *out_right,
 	int num_frames);
 
+extern int fs;
 #ifdef __cplusplus
 }
 #endif

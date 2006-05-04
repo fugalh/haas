@@ -83,11 +83,11 @@ void haas_config(haas_parameters p, int samplerate)
     // detune
     left.detune.quad1.w = left.detune.quad2.w;
     if (p.detune < 0)
-	left.detune.quad1.w = 2*M_PI*(fs/4.0 - 440.0*(pow(2,-p.detune/1200)));
+	left.detune.quad1.w -= 2*M_PI*(440.0 - 440.0*pow(2,p.detune/1200.));
 
     right.detune.quad1.w = right.detune.quad2.w;
     if (p.detune > 0)
-	right.detune.quad1.w = 2*M_PI*(fs/4.0 - 440.0*(pow(2,p.detune/1200)));
+	left.detune.quad1.w -= 2*M_PI*(440.0 - 440.0*pow(2,-p.detune/1200.));
 
 
     // lpf
@@ -130,8 +130,8 @@ void haas_run(float *inl, float *inr,
 	l = delay(&left.delay, l);
 	r = delay(&right.delay, r);
 
-	//l = detune(&left.detune, l);
-	//r = detune(&right.detune, r);
+	l = detune(&left.detune, l);
+	r = detune(&right.detune, r);
 
 	l = onepole(&left.lpf, l);
 	r = onepole(&right.lpf, r);
