@@ -59,7 +59,7 @@ void Haas::setParameter (VstInt32 index, float value)
 	    params.pan = value2;
 	    break;
 	case DETUNE:
-	    params.detune = value2;
+	    params.detune = value2 * 15;
 	    break;
 	case LPF:
 	    params.lpf = value2;
