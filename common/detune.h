@@ -1,12 +1,18 @@
 #ifndef DETUNE_H
 #define DETUNE_H
 
+#include "dsp.h"
+
+// XXX is this a good size?
+#define DETUNE_RING_m 8
+
 typedef struct {
-    float *w;
+    delay_state dl;
     float offset;
-    float ring[96000/2]; // XXX This probably doesn't have to be so large
+    float delta;
+    float ring[DETUNE_RING_m];
 } detune_state;
 
-float detune(detune_state *s, float cents);
+float detune(detune_state *s, float x);
 
 #endif

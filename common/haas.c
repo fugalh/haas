@@ -28,9 +28,7 @@ float detune_rlpf2_ary[LPF_m];
 
 /* functions */
 
-float delay(delay_state *s, float x);
 float onepole(onepole_state *s, float x);
-float detune(detune_state *s, float x);
 void  pan(float inl, float inr, float *outl, float *outr);
 
 
@@ -45,6 +43,21 @@ void haas_init(int samplerate)
     // delay lines
     left.delay.p = left.delay.w = left_dl_ary;
     right.delay.p = right.delay.w = right_dl_ary;
+
+    // detuner
+    detune_state *ds = &left.detune;
+    dl = &ds->dl;
+    dl->w = ds->ring;
+    dl->p = dl->w;
+    dl->m = DETUNE_RING_m;
+    ds->offset = 0;
+
+    ds = &right.detune;
+    dl = &ds->dl;
+    dl->w = ds->ring;
+    dl->p = dl->w;
+    dl->m = DETUNE_RING_m;
+    ds->offset = 0;
 }
 
 // run when parameters change
@@ -85,6 +98,16 @@ void haas_config(haas_parameters p, int samplerate)
     right.attenuation = 0;
     if (p.pan < 0)
 	right.attenuation = -p.pan;
+
+    // detune
+    left.detune.delta = 1;
+    if (p.detune < 0)
+        left.detune.delta = pow(2, -p.detune/1200);
+
+    right.detune.delta = 1;
+    if (p.detune > 0)
+        right.detune.delta = pow(2, p.detune/1200);
+
 }
 
 // the heart
@@ -111,17 +134,6 @@ void haas_run(float *inl, float *inr,
 
 	pan(l, r, outl+i, outr+i);
     }
-}
-
-float delay(delay_state *dl, float x)
-{
-    float *oldest;
-
-    *dl->p = x;
-    oldest = dl->p + dl->m;
-    wrap(MAX_DELAY, dl->w, &oldest);
-    cdelay(MAX_DELAY, dl->w, &dl->p);
-    return *oldest;
 }
 
 float onepole(onepole_state *lpf, float x)

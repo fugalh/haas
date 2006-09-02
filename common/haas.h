@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "detune.h"
 #include "dsp.h"
+#include "detune.h"
 
 /* structs */
     

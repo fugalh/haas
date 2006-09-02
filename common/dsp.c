@@ -31,3 +31,14 @@ void normalize(int n, float *in, float *out)
 	*out = *in * g;
 }
 	
+float delay(delay_state *dl, float x)
+{
+    float *oldest;
+
+    *dl->p = x;
+    oldest = dl->p + dl->m;
+    wrap(dl->m+1, dl->w, &oldest);
+    cdelay(dl->m+1, dl->w, &dl->p);
+    return *oldest;
+}
+
