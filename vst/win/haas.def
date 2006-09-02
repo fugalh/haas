@@ -1,0 +1,3 @@
+LIBRARY     haas
+DESCRIPTION 'Haas Effect VST Plugin'
+EXPORTS     main=VSTPluginMain
