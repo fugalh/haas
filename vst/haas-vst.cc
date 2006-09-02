@@ -21,6 +21,7 @@ Haas::Haas (audioMasterCallback audioMaster)
 	params.detune = 0;
 	params.lpf = 0;
 	params.lpf_cutoff = 18000;
+        haas_config(params, 48000);
 	vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
 }
 
@@ -75,7 +76,7 @@ void Haas::setParameter (VstInt32 index, float value)
 void Haas::setSampleRate (float sampleRate)
 {
     AudioEffectX::setSampleRate(sampleRate);
-    haas_init((int)sampleRate);
+    haas_config(params,(int)sampleRate);
 }
 
 //-----------------------------------------------------------------------------------------

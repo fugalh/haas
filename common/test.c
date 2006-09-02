@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sndfile.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define SR 48000
 void dump(float *l, float *r, SNDFILE *sf, int n);
@@ -103,17 +104,19 @@ int main(void)
     haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
-    // lpf some white noise
+    // detune a sin wave
     int i;
-    float s[LPF_m];
-    delay_state dl;
-    dl.w = dl.p = s;
-    dl.m = LPF_m;
     for (i=0; i<SR; i++)
     {
-	output_l[i] = 2*(0.5 - (float)rand()/RAND_MAX);
-	output_r[i] = fir_lpf(&dl, output_l[i]);
+	float w = 2*M_PI*440;
+	float t = (float)i/SR;
+	impulse_l[i] = impulse_r[i] = sin(w*(float)i/SR);
+
     }
+    p.lpf = 0;
+    p.detune = 15;
+    haas_config(p,SR);
+    haas_run(impulse_l, impulse_r, output_l, output_r, SR);
     dump(output_l, output_r, sf, SR);
 
     sf_close(sf);

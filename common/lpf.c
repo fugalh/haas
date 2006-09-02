@@ -1,5 +1,5 @@
-/* octave: fir1(63, 0.93) */
-static float lpf_coeffs[LPF_m] = {
+/* octave: fir1(31, 0.885) */
+static float lpf_coeffs[32] = {
     6.9856e-04,
     -1.3870e-03,
     2.4721e-03,

@@ -1,6 +1,8 @@
 #ifndef HAAS_VST_H
 #define HAAS_VST_H
 
+#define _CRT_SECURE_NO_DEPRECATE
+
 #include "public.sdk/source/vst2.x/audioeffectx.h"
 #include "../common/haas.h"
 

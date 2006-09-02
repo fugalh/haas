@@ -4,6 +4,7 @@
 float detune(detune_state *s, float x)
 { 
     double a,b;
+    float w,t;
 
 #if 0
     // short circuit
@@ -16,21 +17,26 @@ float detune(detune_state *s, float x)
     a = b = x;
 
     // first stage (ring with quad1)
-    a *= sin(s->quad1.w * (double)s->quad1.t/fs);
-    b *= cos(s->quad1.w * (double)s->quad1.t++/fs);
+    w = s->quad1.w;
+    t = (float)s->quad1.t++/fs;
+    a *= sin(w*t);
+    b *= cos(w*t);
 
     // second stage (lowpass filters)
     a = fir_lpf(&s->lpf1_dl, a);
     b = fir_lpf(&s->lpf2_dl, b);
 
     // third stage (ring with quad2)
-    a *= sin(s->quad2.w * (double)s->quad2.t/fs);
-    b *= cos(s->quad2.w * (double)s->quad2.t++/fs);
+    w = s->quad2.w;
+    t = (float)s->quad2.t++/fs;
+    a *= sin(w*t);
+    b *= cos(w*t);
 
     // final sum
     return a+b;
 }
 
+#include "lpf.c"
 
 // sum_{k=0}^{M}(b_k*z^-k)
 double fir_lpf(delay_state *dl, float x)
@@ -58,4 +64,3 @@ double fir_lpf(delay_state *dl, float x)
     return y;
 }
 
-#include "lpf.c"

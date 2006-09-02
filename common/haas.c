@@ -2,6 +2,10 @@
 #include "haas.h"
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14
+#endif
+
 /* data */
 
 // lowpass filter coefficients, for the lpf in the detuner
@@ -36,17 +40,17 @@ void  pan(float inl, float inr, float *outl, float *outr);
 void haas_init(int samplerate)
 {
     fs = samplerate;
+    delay_state *dl;
 
     // delay lines
     left.delay.p = left.delay.w = left_dl_ary;
     right.delay.p = right.delay.w = right_dl_ary;
 
     // detune quadrature frequencies
-    left.detune.quad2.w = 2*M_PI*fs/4.0;
-    right.detune.quad2.w = 2*M_PI*fs/4.0;
+    left.detune.quad1.w = 2*M_PI*fs/4.0;
+    right.detune.quad1.w = 2*M_PI*fs/4.0;
 
     // detune lowpass filters
-    delay_state *dl;
     dl = &left.detune.lpf1_dl;
     dl->p = dl->w = detune_llpf1_ary;
     dl->m = LPF_m;
@@ -81,13 +85,13 @@ void haas_config(haas_parameters p, int samplerate)
     
 
     // detune
-    left.detune.quad1.w = left.detune.quad2.w;
+    left.detune.quad2.w = left.detune.quad1.w;
     if (p.detune < 0)
-	left.detune.quad1.w -= 2*M_PI*(440.0 - 440.0*pow(2,p.detune/1200.));
+	left.detune.quad2.w = 2*M_PI*(fs/4. - 440.0*(1.-pow(2,p.detune/1200.)));
 
-    right.detune.quad1.w = right.detune.quad2.w;
+    right.detune.quad2.w = right.detune.quad1.w;
     if (p.detune > 0)
-	left.detune.quad1.w -= 2*M_PI*(440.0 - 440.0*pow(2,-p.detune/1200.));
+	left.detune.quad2.w = 2*M_PI*(fs/4. - 440.0*(1.-pow(2,-p.detune/1200.)));
 
 
     // lpf
