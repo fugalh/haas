@@ -1,8 +1,12 @@
 #ifndef DETUNE_H
 #define DETUNE_H
 
-#include "haas.h"
+typedef struct {
+    float *w;
+    float offset;
+    float ring[96000/2]; // XXX This probably doesn't have to be so large
+} detune_state;
 
-double fir_lpf(delay_state *dl, float x);
+float detune(detune_state *s, float cents);
 
 #endif

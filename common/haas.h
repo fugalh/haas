@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "detune.h"
 #include "dsp.h"
 
 /* structs */
@@ -17,12 +18,6 @@ typedef struct {
     float w;	// omega = 2*pi*f
     int t;
 } quad_state;
-
-typedef struct {
-    quad_state quad1, quad2;
-    delay_state lpf1_dl, lpf2_dl;
-    int t;
-} detune_state;
 
 // one-pole IIR lowpass filter
 // a = 1-b

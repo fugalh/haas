@@ -45,27 +45,6 @@ void haas_init(int samplerate)
     // delay lines
     left.delay.p = left.delay.w = left_dl_ary;
     right.delay.p = right.delay.w = right_dl_ary;
-
-    // detune quadrature frequencies
-    left.detune.quad1.w = 2*M_PI*fs/4.0;
-    right.detune.quad1.w = 2*M_PI*fs/4.0;
-
-    // detune lowpass filters
-    dl = &left.detune.lpf1_dl;
-    dl->p = dl->w = detune_llpf1_ary;
-    dl->m = LPF_m;
-
-    dl = &left.detune.lpf2_dl;
-    dl->p = dl->w = detune_llpf2_ary;
-    dl->m = LPF_m;
-
-    dl = &right.detune.lpf1_dl;
-    dl->p = dl->w = detune_rlpf1_ary;
-    dl->m = LPF_m;
-
-    dl = &right.detune.lpf2_dl;
-    dl->p = dl->w = detune_rlpf2_ary;
-    dl->m = LPF_m;
 }
 
 // run when parameters change
@@ -83,16 +62,6 @@ void haas_config(haas_parameters p, int samplerate)
     if (p.delay > 0)
 	right.delay.m += (p.delay * 1.0e-3)*fs;
     
-
-    // detune
-    left.detune.quad2.w = left.detune.quad1.w;
-    if (p.detune < 0)
-	left.detune.quad2.w = 2*M_PI*(fs/4. - 440.0*(1.-pow(2,p.detune/1200.)));
-
-    right.detune.quad2.w = right.detune.quad1.w;
-    if (p.detune > 0)
-	left.detune.quad2.w = 2*M_PI*(fs/4. - 440.0*(1.-pow(2,-p.detune/1200.)));
-
 
     // lpf
     left.lpf.gain = 0;
