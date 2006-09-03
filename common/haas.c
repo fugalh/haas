@@ -102,11 +102,11 @@ void haas_config(haas_parameters p, int samplerate)
     // detune
     left.detune.delta = 1;
     if (p.detune < 0)
-        left.detune.delta = pow(2, -p.detune/1200);
+        left.detune.delta = 1/pow(2, -p.detune/1200);
 
     right.detune.delta = 1;
     if (p.detune > 0)
-        right.detune.delta = pow(2, p.detune/1200);
+        right.detune.delta = 1/pow(2, p.detune/1200);
 
 }
 
