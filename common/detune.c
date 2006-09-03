@@ -9,12 +9,18 @@ float linterpolate(float y0, float y1, float frac)
 float detune(detune_state *s, float x)
 {
     float *a1, *a2, *b1, *b2, a, b;
-    int i = floor(s->offset);
-    float frac = s->offset - i;
-    int c;
+    float c;
     float y;
 
-    return x;
+    // advance
+    *(s->dl.p) = x;
+    (s->dl.p)++;
+    wrap(DETUNE_RING_m-1, s->dl.w, &s->dl.p);
+    if (s->delta == 1)
+        s->offset = s->dl.p - s->dl.w;
+
+    int i = floor(s->offset);
+    float frac = s->offset - i;
 
     // get pointers to a and b, then linearly interpolate
     a1 = s->dl.w + i;
@@ -32,18 +38,22 @@ float detune(detune_state *s, float x)
     b = linterpolate(*b1, *b2, frac);
 
     // how much crossfade?
-    c = abs(a1 - s->dl.p);
+    int p = s->dl.p - s->dl.w;
+    c = fabs(s->offset - p);
+#if 0
+    // This doesn't seem to work very well.
     if (c > DETUNE_RING_m/2)
-        c = abs(c - DETUNE_RING_m);
+        c -= DETUNE_RING_m/2;
     c /= DETUNE_RING_m;
+#else
+    c = 1; // always a. seems to work best. yes, could optimize away b
+#endif
 
     // calculate y
     y = c*a + (1-c)*b;
 
-    // advance
-    delay(&s->dl, x);
     s->offset += s->delta;
-    if (s->offset > DETUNE_RING_m)
+    while (s->offset > DETUNE_RING_m-1)
         s->offset -= DETUNE_RING_m;
 
     return y;

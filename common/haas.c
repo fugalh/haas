@@ -49,14 +49,14 @@ void haas_init(int samplerate)
     dl = &ds->dl;
     dl->w = ds->ring;
     dl->p = dl->w;
-    dl->m = DETUNE_RING_m;
+    dl->m = DETUNE_RING_m-1;
     ds->offset = 0;
 
     ds = &right.detune;
     dl = &ds->dl;
     dl->w = ds->ring;
     dl->p = dl->w;
-    dl->m = DETUNE_RING_m;
+    dl->m = DETUNE_RING_m-1;
     ds->offset = 0;
 }
 

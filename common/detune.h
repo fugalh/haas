@@ -4,7 +4,7 @@
 #include "dsp.h"
 
 // XXX is this a good size?
-#define DETUNE_RING_m 8
+#define DETUNE_RING_m 4
 
 typedef struct {
     delay_state dl;
